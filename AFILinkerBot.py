@@ -82,11 +82,11 @@ while True:
 				formattedComment = rAirForceComments.body
 				formattedComment = formattedComment.lower()
 				formattedComment = formattedComment.replace(' ', '')
-				if "afform" in formattedComment:
-						formattedComment = formattedComment.replace('form', '')
-				if "aftoform" in formattedComment:
-					formattedComment = formattedComment.replace('form', '')
+				#Reformatted the logic below to save a few cycles
 				if "form" in formattedComment:
+					if "afform" in formattedComment or "aftoform" in formattedComment:
+						formattedComment = formattedComment.replace('form', '')
+					else:
 						formattedComment = formattedComment.replace('form', 'af')
 				formattedComment = formattedComment.replace('vol','v')
 				print("Formatted Comment: " + formattedComment)
