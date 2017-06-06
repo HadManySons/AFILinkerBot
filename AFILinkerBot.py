@@ -8,7 +8,8 @@ import random
 import logging
 import time
 
-# Initialize a logging object and have some examples below from the Python Doc page
+# Initialize a logging object and have some examples below from the Python
+# Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
@@ -68,7 +69,8 @@ else:  # if it doesn't, create it
 subreddit = 'AFILinkerBot'
 rAirForce = reddit.subreddit(subreddit)
 
-logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting processing loop for subreddit: " + subreddit)
+logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
+             "Starting processing loop for subreddit: " + subreddit)
 
 while True:
     try:
@@ -80,24 +82,30 @@ while True:
 
             # prints a link to the comment. A True for permalink generates a fast find (but is not an accurate link,
             # just makes the script faster *SIGNIFICANTLY FASTER)
-            permlink = "http://www.reddit.com" + rAirForceComments.permalink(True) + "/"
+            permlink = "http://www.reddit.com" + \
+                rAirForceComments.permalink(True) + "/"
             print(permlink)
-            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Processing comment: " + permlink)
+            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
+                         "Processing comment: " + permlink)
 
             # Pulls all comments previously commented on
-            dbCommentRecord.execute("SELECT * FROM comments WHERE comment=?", (rAirForceComments.id,))
+            dbCommentRecord.execute(
+                "SELECT * FROM comments WHERE comment=?", (rAirForceComments.id,))
 
             id_exists = dbCommentRecord.fetchone()
 
-            # Make sure we don't reply to the same comment twice or to the bot itself
+            # Make sure we don't reply to the same comment twice or to the bot
+            # itself
             if id_exists:
-                print("Already processed comment: " + str(rAirForceComments.id) + ", skipping")
+                print("Already processed comment: " +
+                      str(rAirForceComments.id) + ", skipping")
                 continue
             elif rAirForceComments.author == "AFILinkerBot":
                 print("Author was the bot, skipping...")
                 continue
             else:
-                # make the comment all lowercase and remove all spaces, change vol to v, and other cleanup
+                # make the comment all lowercase and remove all spaces, change
+                # vol to v, and other cleanup
                 formattedComment = rAirForceComments.body
                 formattedComment = formattedComment.lower()
                 formattedComment = formattedComment.replace(' ', '')
@@ -114,10 +122,12 @@ while True:
                 inputToTest = re.compile(AFIsearchRegEx, re.IGNORECASE)
                 MatchedComments = inputToTest.finditer(formattedComment)
 
-                # Keep a list of matched comments so we only post one link per AFI
+                # Keep a list of matched comments so we only post one link per
+                # AFI
                 ListOfMatchedComments = []
 
-                # Variables to hold all the matched AFI links and their respective search links
+                # Variables to hold all the matched AFI links and their
+                # respective search links
                 TotalAFILinks = ""
                 TotalSearchLinks = ""
 
@@ -131,7 +141,8 @@ while True:
                         # Add the matched comment into the master list
                         ListOfMatchedComments.append(individualMention.group())
 
-                        # searchLink is what is at the bottom of a comment to let people search for their own crap
+                        # searchLink is what is at the bottom of a comment to
+                        # let people search for their own crap
                         searchLink = '[' + str(
                             individualMention.group()).upper() + 'search link](http://www.e-publishing.af.mil/index' \
                                                                  '.asp?txtSearchWord=%s&btnG.x=28&btnG.y=4&client' \
@@ -143,7 +154,8 @@ while True:
                         epubsReturn = requests.get(
                             'http://www.e-publishing.af.mil/shared/resource/EPubLibraryV3/EPubLibrary.aspx?type='
                             'Pubs&search_title=%s' % individualMention.group())
-                        epubsSearch = BeautifulSoup(epubsReturn.text, 'html.parser')
+                        epubsSearch = BeautifulSoup(
+                            epubsReturn.text, 'html.parser')
 
                         # A little extra something
                         if "afttp" in individualMention.group():
@@ -156,31 +168,41 @@ while True:
                                          "Dropping a smarmy comment on the mention of: " + individualMention.group()
                                          + " by " + str(rAirForceComments.author) + ". Comment ID: " +
                                          rAirForceComments.id + "\n")
-                            rAirForceComments.reply(SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)]))
-                            dbCommentRecord.execute('INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
+                            rAirForceComments.reply(
+                                SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)]))
+                            dbCommentRecord.execute(
+                                'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
                             conn.commit()
                             continue
 
-                        # regex to match exactly the afi typed from the ePubs crawl
-                        individualMentionRegex = "(?<=/)(" + individualMention.group() + ")(?=\.pdf)"
-                        # scrub the epubs search return and look for an exact match between a / and .pdf
-                        epubsSearchForAllLinesWithPDF = epubsSearch.find_all(string=re.compile(individualMentionRegex))
+                        # regex to match exactly the afi typed from the ePubs
+                        # crawl
+                        individualMentionRegex = "(?<=/)(" + \
+                            individualMention.group() + ")(?=\.pdf)"
+                        # scrub the epubs search return and look for an exact
+                        # match between a / and .pdf
+                        epubsSearchForAllLinesWithPDF = epubsSearch.find_all(
+                            string=re.compile(individualMentionRegex))
 
-                        # Parse through results and start building the TotalAFILinks and TotalSearchLinks variables
+                        # Parse through results and start building the
+                        # TotalAFILinks and TotalSearchLinks variables
                         for link in epubsSearchForAllLinesWithPDF:
                             print("Link: " + link)
                             TotalAFILinks += link + "\n\n"
                             TotalSearchLinks += searchLink + "\n\n"
 
-                # if the TotalAFILinks variable isn't empty (no matches), prepare the reply comment
+                # if the TotalAFILinks variable isn't empty (no matches),
+                # prepare the reply comment
                 if TotalAFILinks != "":
                     replyComment = TotalAFILinks
                     replyComment += "___________________________________________________________\n\n"
                     replyComment += NormalReplyTemplate
                     replyComment += "___________________________________________________________\n\n"
                     replyComment += "\n\n" + TotalSearchLinks
-                    # create db record of comment so we don't comment on it again
-                    dbCommentRecord.execute('INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
+                    # create db record of comment so we don't comment on it
+                    # again
+                    dbCommentRecord.execute(
+                        'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
 
                     # Comments on post
                     print("Commenting on mention of: " + str(ListOfMatchedComments) + " by " + str(
@@ -199,5 +221,6 @@ while True:
         conn.commit()
         conn.close()
         print("Exiting due to keyboard interrupt")
-        logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Exiting due to keyboard interrupt")
+        logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
+                     "Exiting due to keyboard interrupt")
         exit()
