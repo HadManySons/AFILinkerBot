@@ -112,7 +112,7 @@ while True:
                 if "form" in formattedComment:
                     if "afform" in formattedComment or "aftoform" in formattedComment:
                         formattedComment = formattedComment.replace('form', '')
-                    else
+                    else:
                         formattedComment = formattedComment.replace('form', 'af')
                 formattedComment = formattedComment.replace('vol', 'v')
                 print("Formatted Comment: " + formattedComment)
