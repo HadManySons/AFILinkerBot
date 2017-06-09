@@ -9,6 +9,6 @@ Usage:
 
 3. Change the subreddit variable from 'AFILinkerBot' to the subreddit of your choice
 
-4. Remove the 'True' from 'permlink = "http://www.reddit.com" + rAirForceComments.permalink(True) + "/"' on approx line 64 to get true permalink output, otherwise the script will print an estimated permalink, which won't actually work.
+4. Remove the 'True' from 'permlink = "http://www.reddit.com" + rAirForceComments.permalink(True) + "/"' on approx line 86 to get true permalink output, otherwise the script will print an estimated permalink, which won't actually work.
 
 5. Run script
