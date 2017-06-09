@@ -33,7 +33,7 @@ reddit = praw.Reddit(
 AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|" \
                  "usafai|afttp)[0-9]{1,2}-[0-9]{1,4}([0-9]{1})?([a-z]{1,2}-)?" \
                  "([0-9]{1,3})?(vol|v)?\d?)|((af|form|afform|sf|afto|afcomsec|afg|" \
-                 "apda|aftd|imt|afimt|aetc)[0-9]{1,4}([a-z]{1,3})?)"
+                 "apda|aftd|imt|afimt|aetc)[0-9]{1,4})"
 
 # Reply templates to go in the middle of comments
 NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication, ' \
@@ -220,6 +220,11 @@ while True:
         conn.commit()
         conn.close()
         print("Exiting due to keyboard interrupt")
-        logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
-                     "Exiting due to keyboard interrupt")
-        exit()
+        logging.info(time.strftime("%Y/%m/%d %H:%M:%S ")
+                    + "Exiting due to keyboard interrupt")
+        exit(0)
+    
+    except Exception as err:
+        print("Exception: " + err)
+        logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") 
+                                + "Unhandled exception: " + err)
