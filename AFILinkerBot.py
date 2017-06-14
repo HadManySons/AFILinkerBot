@@ -36,13 +36,14 @@ AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|"
                  "apda|aftd|imt|afimt|aetc)[0-9]{1,4})"
 
 # Reply templates to go in the middle of comments
-NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication, ' \
-                      '^^so ^^I ^^have ^^posted ^^a ^^link ^^to ^^it. ^^Additionally, ^^there ^^may ^^be ^^other ' \
-                      '^^MAJCOM, ^^NAF ^^or ^^Wing ^^sups ^^to ^^the ^^linked ^^AFI, ^^so ^^I ^^will ^^also ^^post ' \
-                      '^^a ^^link ^^to ^^the ^^search ^^URL ^^used ^^below ^^so ^^that ^^you ^^can ^^see ^^look ' \
-                      '^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ^^apply. ^^Please ' \
-                      '^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a ^^suggestion ' \
-                      '^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot).\n\n'
+NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication ^^without ' \
+                      '^^linking ^^to ^^it, ^^so ^^I ^^have ^^posted ^^a ^^link ^^to ^^it. ^^Additionally, ^^there ' \
+                      '^^may ^^be ^^other ^^MAJCOM, ^^NAF ^^or ^^Wing ^^sups ^^to ^^the ^^linked ^^AFI, ^^so ^^I ' \
+                      '^^will ^^also ^^post ^^a ^^link ^^to ^^the ^^search ^^URL ^^used ^^below ^^so ^^that ^^you ' \
+                      '^^can ^^see ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
+                      '^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a '\
+                      '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
+                      ' ^^[GitHub](https://github.com/HadManySons/AFILinkerBot) .\n\n'
 SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or something but I see you tried to ' \
                       'reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random ' \
                       'from a list:\n\n'
@@ -138,9 +139,6 @@ while True:
                     if individualMention.group() in ListOfMatchedComments:
                         continue
                     else:
-                        # Add the matched comment into the master list
-                        ListOfMatchedComments.append(individualMention.group())
-
                         # searchLink is what is at the bottom of a comment to
                         # let people search for their own crap
                         searchLink = '[' + str(
@@ -187,9 +185,14 @@ while True:
                         # Parse through results and start building the
                         # TotalAFILinks and TotalSearchLinks variables
                         for link in epubsSearchForAllLinesWithPDF:
-                            print("Link: " + link)
-                            TotalAFILinks += link + "\n\n"
-                            TotalSearchLinks += searchLink + "\n\n"
+                            if link in formattedComment:
+                                print(str(individualMention.group()).upper() + " link already posted by OP, skipping")
+                            else:
+                                # Add the matched comment into the master list
+                                ListOfMatchedComments.append(individualMention.group())
+                                print("Link: " + link)
+                                TotalAFILinks += link + "\n\n"
+                                TotalSearchLinks += searchLink + "\n\n"
 
                 # if the TotalAFILinks variable isn't empty (no matches),
                 # prepare the reply comment

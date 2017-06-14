@@ -1,3 +1,2 @@
-Make sure that a link to the AFI was not already posted by OP or the commentor
 Do some more exception handling besides just keyboard interrupt
 Get a running process check in place in case the script crashed, something like this: https://stackoverflow.com/questions/788411/check-to-see-if-python-script-is-running
