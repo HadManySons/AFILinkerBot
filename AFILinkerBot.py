@@ -14,8 +14,6 @@ import sys
 # Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
-logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
-
 #Get the PID of this process
 pid = str(os.getpid())
 pidfile = "LinkerBot.pid"
@@ -27,6 +25,8 @@ if os.path.isfile(pidfile):
 
 #Create the lock file for the script
 open(pidfile, 'w').write(pid)
+
+logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
 
 # reddit user object
 creds = open('LinkerBotCreds.txt', 'r')
