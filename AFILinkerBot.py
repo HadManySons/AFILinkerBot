@@ -7,12 +7,26 @@ import re
 import random
 import logging
 import time
+import os
+import sys
 
 # Initialize a logging object and have some examples below from the Python
 # Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
+
+#Get the PID of this process
+pid = str(os.getpid())
+pidfile = "LinkerBot.pid"
+
+#Exit if a version of the script is already running
+if os.path.isfile(pidfile):
+    print(pidfile + " already running, exiting")
+    sys.exit()
+
+#Create the lock file for the script
+open(pidfile, 'w').write(pid)
 
 # reddit user object
 creds = open('LinkerBotCreds.txt', 'r')
@@ -232,3 +246,6 @@ while True:
         print("Exception: " + err)
         logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") 
                                 + "Unhandled exception: " + err)
+
+    finally:
+        os.unlink(pidfile)
