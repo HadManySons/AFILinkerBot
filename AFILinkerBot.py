@@ -43,7 +43,7 @@ NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form 
                       '^^can ^^see ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
                       '^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a '\
                       '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
-                      ' ^^[GitHub](https://github.com/HadManySons/AFILinkerBot) .\n\n'
+                      ' ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n'
 SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or something but I see you tried to ' \
                       'reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random ' \
                       'from a list:\n\n'
