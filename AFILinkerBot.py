@@ -29,25 +29,48 @@ open(pidfile, 'w').write(pid)
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
 
 # reddit user object
-creds = open('LinkerBotCreds.txt', 'r')
+try:
+    creds = open('LinkerBotCreds.txt', 'r')
+    print("Opened creds file")
+    logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Opened creds file")
+except OSError:
+    print("Couldn't open LinkerBotCreds.txt")
+    logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") + "Couldn't open LinkerBotCreds.txt")
+    exit()
+
 credsUserAgent = creds.readline()
 credsClientID = creds.readline()
 credsClientSecret = creds.readline()
 credsUsername = creds.readline()
 credsPassword = creds.readline()
 creds.close()
-reddit = praw.Reddit(
-    user_agent=credsUserAgent.strip(),
-    client_id=credsClientID.strip(),
-    client_secret=credsClientSecret.strip(),
-    username=credsUsername.strip(),
-    password=credsPassword.strip())
+
+#Try to login or sleep/wait until logged in, or exit if user/pass wrong
+NotLoggedIn = True
+while NotLoggedIn:
+    try:
+        reddit = praw.Reddit(
+            user_agent=credsUserAgent.strip(),
+            client_id=credsClientID.strip(),
+            client_secret=credsClientSecret.strip(),
+            username=credsUsername.strip(),
+            password=credsPassword.strip())
+        print("Logged in")
+        NotLoggedIn = False
+    except praw.errors.InvalidUserPass:
+        print("Wrong username or password")
+        logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") + "Wrong username or password")
+        exit(1)
+    except Exception as err:
+        print(err)
+        time.sleep(5)
+
 
 # regex expression used to search for an AFI mention
 AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|" \
                  "usafai|afttp)[0-9]{1,2}-[0-9]{1,4}([0-9]{1})?([a-z]{1,2}-)?" \
                  "([0-9]{1,3})?(vol|v)?\d?)|((af|form|afform|sf|afto|afcomsec|afg|" \
-                 "apda|aftd|imt|afimt|aetc)[0-9]{1,4})"
+                 "apda|aftd|imt|afimt|aetc)[0-9]{1,4}([a-z]{1,2})?)"
 
 # Reply templates to go in the middle of comments
 NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication ^^without ' \
@@ -57,14 +80,13 @@ NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form 
                       '^^can ^^see ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
                       '^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a '\
                       '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
-                      ' ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n'
+                      ' ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n' \
+                      'I am a bot, this was an automatic reply.\n\n'
 SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or something but I see you tried to ' \
                       'reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random ' \
-                      'from a list:\n\n'
+                      'from a list:\n\n**'
 
 # vars
-conn = ""
-dbCommentRecord = ""
 globalCount = 0
 dbFile = Path("CommentRecord.db")
 
@@ -180,8 +202,9 @@ while True:
                                          "Dropping a smarmy comment on the mention of: " + individualMention.group()
                                          + " by " + str(rAirForceComments.author) + ". Comment ID: " +
                                          rAirForceComments.id + "\n")
-                            rAirForceComments.reply(
-                                SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)]))
+                            smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
+                            smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
+                            rAirForceComments.reply(smarmyReply)
                             dbCommentRecord.execute(
                                 'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
                             conn.commit()
@@ -199,6 +222,11 @@ while True:
                         # Parse through results and start building the
                         # TotalAFILinks and TotalSearchLinks variables
                         for link in epubsSearchForAllLinesWithPDF:
+                            if "CDATA" in link:
+                                print("Garbage return, skipping link")
+                                logging.error(time.strftime("%Y/%m/%d %H:%M:%S ")
+                                              + "Garbage ePubs return")
+                                continue
                             if link in formattedComment:
                                 print(str(individualMention.group()).upper() + " link already posted by OP, skipping")
                             else:
@@ -234,7 +262,7 @@ while True:
 
     # what to do if Ctrl-C is pressed while script is running
     except KeyboardInterrupt:
-        print("Keyboard Interrupt/Ctrl-c experienced, cleaning up and exiting")
+        print("Keyboard Interrupt experienced, cleaning up and exiting")
         conn.commit()
         conn.close()
         print("Exiting due to keyboard interrupt")

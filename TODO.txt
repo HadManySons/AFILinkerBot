@@ -1,3 +1,1 @@
-Do some more exception handling besides just keyboard interrupt
-Allow downvotes to dictate that the bot should delete it's comments
-Search through comments and posts at the same time
+1....
