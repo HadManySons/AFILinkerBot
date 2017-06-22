@@ -77,7 +77,7 @@ NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form 
                       '^^linking ^^to ^^it, ^^so ^^I ^^have ^^posted ^^a ^^link ^^to ^^it. ^^Additionally, ^^there ' \
                       '^^may ^^be ^^other ^^MAJCOM, ^^NAF ^^or ^^Wing ^^sups ^^to ^^the ^^linked ^^AFI, ^^so ^^I ' \
                       '^^will ^^also ^^post ^^a ^^link ^^to ^^the ^^search ^^URL ^^used ^^below ^^so ^^that ^^you ' \
-                      '^^can ^^see ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
+                      '^^can ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
                       '^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a '\
                       '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
                       ' ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n' \
