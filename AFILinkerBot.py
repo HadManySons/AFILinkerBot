@@ -103,7 +103,7 @@ else:  # if it doesn't, create it
 
 # subreddit instance of /r/AirForce. 'AFILinkerBot' must be changed to 'airforce' for a production version of the
 # script. AFILB subreddit used for testing.
-#subreddit = 'airforce+airnationalguard'
+#subreddit = 'airforce+airnationalguard+afrotc'
 subreddit = 'AFILinkerBot'
 rAirForce = reddit.subreddit(subreddit)
 
