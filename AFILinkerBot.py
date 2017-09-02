@@ -178,7 +178,7 @@ while True:
                         # searchLink is what is at the bottom of a comment to
                         # let people search for their own crap
                         searchLink = '[' + str(
-                            individualMention.group()).upper() + 'search link](http://www.e-publishing.af.mil/index' \
+                            individualMention.group()).upper() + ' search link](http://www.e-publishing.af.mil/index' \
                                                                  '.asp?txtSearchWord=%s&btnG.x=28&btnG.y=4&client' \
                                                                  '=AFPW_EPubs&proxystylesheet=AFPW_EPubs&ie=UTF-8&oe=' \
                                                                  'UTF-8&output=xml_no_dtd&site=AFPW_EPubs)'\
