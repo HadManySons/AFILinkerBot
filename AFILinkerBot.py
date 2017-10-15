@@ -9,14 +9,14 @@ import logging
 import time
 import os
 import sys
-
+from BotCreds import credsUserAgent, credsClientID, credsClientSecret, credsPassword, credsUserName
 # Initialize a logging object and have some examples below from the Python
 # Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
 #Get the PID of this process
 pid = str(os.getpid())
-pidfile = "LinkerBot.pid"
+pidfile = "AFILinkerBot.pid"
 
 #Exit if a version of the script is already running
 if os.path.isfile(pidfile):
@@ -28,23 +28,6 @@ open(pidfile, 'w').write(pid)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
 
-# reddit user object
-try:
-    creds = open('LinkerBotCreds.txt', 'r')
-    print("Opened creds file")
-    logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Opened creds file")
-except OSError:
-    print("Couldn't open LinkerBotCreds.txt")
-    logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") + "Couldn't open LinkerBotCreds.txt")
-    exit()
-
-credsUserAgent = creds.readline()
-credsClientID = creds.readline()
-credsClientSecret = creds.readline()
-credsUsername = creds.readline()
-credsPassword = creds.readline()
-creds.close()
-
 #Try to login or sleep/wait until logged in, or exit if user/pass wrong
 NotLoggedIn = True
 while NotLoggedIn:
@@ -53,7 +36,7 @@ while NotLoggedIn:
             user_agent=credsUserAgent.strip(),
             client_id=credsClientID.strip(),
             client_secret=credsClientSecret.strip(),
-            username=credsUsername.strip(),
+            username=credsUserName.strip(),
             password=credsPassword.strip())
         print("Logged in")
         NotLoggedIn = False
@@ -175,21 +158,6 @@ while True:
                     if individualMention.group() in ListOfMatchedComments:
                         continue
                     else:
-                        # searchLink is what is at the bottom of a comment to
-                        # let people search for their own crap
-                        searchLink = '[' + str(
-                            individualMention.group()).upper() + ' search link](http://www.e-publishing.af.mil/index' \
-                                                                 '.asp?txtSearchWord=%s&btnG.x=28&btnG.y=4&client' \
-                                                                 '=AFPW_EPubs&proxystylesheet=AFPW_EPubs&ie=UTF-8&oe=' \
-                                                                 'UTF-8&output=xml_no_dtd&site=AFPW_EPubs)'\
-                                                                 % individualMention.group()
-
-                        # polls the epubs website for a search
-                        epubsReturn = requests.get(
-                            'http://www.e-publishing.af.mil/shared/resource/EPubLibraryV3/EPubLibrary.aspx?type='
-                            'Pubs&search_title=%s' % individualMention.group())
-                        epubsSearch = BeautifulSoup(
-                            epubsReturn.text, 'html.parser')
 
                         # A little extra something
                         if "afttp" in individualMention.group():
@@ -203,12 +171,26 @@ while True:
                                          + " by " + str(rAirForceComments.author) + ". Comment ID: " +
                                          rAirForceComments.id + "\n")
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
-                            smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
+                            smarmyReply += '\n\nI am a bot, this was an automatic reply.'
                             rAirForceComments.reply(smarmyReply)
                             dbCommentRecord.execute(
                                 'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
                             conn.commit()
                             continue
+
+                        # searchLink is what is at the bottom of a comment to
+                        # let people search for their own crap
+                        searchLink = '[' + str(
+                            individualMention.group()).upper() + ' search link](http://www.e-publishing.af.mil' \
+                                                                 '/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView' \
+                                                                 '?keyword=%s&obsolete=false)' \
+                                                                 % individualMention.group()
+
+                        # polls the epubs website for a search
+                        epubsReturn = requests.get(
+                            'http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView?keyword=%s&obsolete=false' % individualMention.group())
+                        epubsSearch = BeautifulSoup(
+                            epubsReturn.text, 'html.parser')
 
                         # regex to match exactly the afi typed from the ePubs
                         # crawl
@@ -216,12 +198,25 @@ while True:
                             individualMention.group() + ")(?=\.pdf)"
                         # scrub the epubs search return and look for an exact
                         # match between a / and .pdf
-                        epubsSearchForAllLinesWithPDF = epubsSearch.find_all(
-                            string=re.compile(individualMentionRegex))
+
+                        listOfLinks = []
+                        listOfMatchedLinks = []
+
+                        #find all <a href> tags and append the hyperlink to a list
+                        for aTags in epubsSearch.find_all('a'):
+                            listOfLinks.append(aTags.get('href'))
+
+                        regObject = re.compile(individualMentionRegex)
+
+                        #iterate through the list of link to find exact matches
+                        for i in range(0,len(listOfLinks)):
+                            listItem = regObject.findall(listOfLinks[i])
+                            if listItem:
+                                listOfMatchedLinks.append(listOfLinks[i])
 
                         # Parse through results and start building the
                         # TotalAFILinks and TotalSearchLinks variables
-                        for link in epubsSearchForAllLinesWithPDF:
+                        for link in listOfMatchedLinks:
                             if "CDATA" in link:
                                 print("Garbage return, skipping link")
                                 logging.error(time.strftime("%Y/%m/%d %H:%M:%S ")
