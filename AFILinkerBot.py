@@ -101,10 +101,9 @@ while True:
             print("\nComments processed since start of script: " + str(globalCount))
             print("Processing comment: " + rAirForceComments.id)
 
-            # prints a link to the comment. A True for permalink generates a fast find (but is not an accurate link,
-            # just makes the script faster *SIGNIFICANTLY FASTER)
+            # prints a link to the comment.
             permlink = "http://www.reddit.com" + \
-                rAirForceComments.permalink(True) + "/"
+                rAirForceComments.permalink
             print(permlink)
             logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
                          "Processing comment: " + permlink)
