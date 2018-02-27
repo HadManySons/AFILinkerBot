@@ -98,7 +98,7 @@ logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
 #All the .close() statements
 ePubs404Error = 0
 with open("404errors.txt", "a") as f:
-    f.write(f'START: {time.strftime("%Y/%m/%d %H:%M:%S ")}\n')
+    f.write('START: {}\n'.format(time.strftime("%Y/%m/%d %H:%M:%S")))
 
 while True:
     try:
@@ -188,25 +188,23 @@ while True:
                         searchLink = '[' + str(
                             individualMention.group()).upper() + ' search link](http://www.e-publishing.af.mil' \
                                                                  '/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView' \
-                                                                 '?keyword=%s&obsolete=false)' \
+                                                                 '/?keyword=%s&obsolete=false)' \
                                                                  % individualMention.group()
 
                         #polls the epubs website for a search
                         reqParams = {'keyword' : individualMention.group(), 'obsolete':'false'}
                         epubsReturn = requests.get('http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/', params=reqParams)
 
-                        if epubsReturn.status_code == requests.codes.ok:
-                            break
-                        else:
+                        if epubsReturn.status_code == requests.codes.not_found:
                             with open("404errors.txt","a") as f:
-                                f.write(f'{time.strftime("%Y/%m/%d %H:%M:%S ")} Comment: {permlink}\n')
+                                f.write('{} Comment: {}\n'.format(time.strftime("%Y/%m/%d %H:%M:%S "), permlink))
                             print("404 Error received, retrying in 10 seconds")
                             for i in range(5):
                                 time.sleep(10)
                                 ePubs404Error += 1
                                 with open("404errors.txt", "a") as f:
-                                    f.write(f'Try #{i+1} for {epubsReturn.url}, total failure this lifecycle: {ePubs404Error}\n')
-                                print(f'Got a {str(epubsReturn.status_code)}, this is try number {i+1} to get a return')
+                                    f.write('Try #{} for {}, total failure this lifecycle: {}\n'.format((i+1), epubsReturn.url, ePubs404Error))
+                                print('Got a {}, this is try number {} to get a return'.format(str(epubsReturn.status_code),(i+1)))
                                 epubsReturn = requests.get(
                                     'http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/',
                                     params=reqParams)
