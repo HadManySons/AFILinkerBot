@@ -64,7 +64,7 @@ while True:
 
             # prints a link to the comment.
             permlink = "http://www.reddit.com" + \
-                       rAirForceComments.permalink + "/"
+                       rAirForceComments.permalink
             print(permlink)
             logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
                          "Processing comment: " + permlink)
@@ -79,7 +79,7 @@ while True:
                 grandparent = parent.parent()
 
                 grandparentPermalink = "http://www.reddit.com" + \
-                       grandparent.permalink() + "/"
+                       grandparent.permalink
 
                 formattedComment = rAirForceComments.body
                 formattedComment = formattedComment.lower()
