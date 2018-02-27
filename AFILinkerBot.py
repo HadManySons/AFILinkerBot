@@ -9,6 +9,7 @@ import logging
 import time
 import os
 import sys
+import json
 from BotCreds import credsUserAgent, credsClientID, credsClientSecret, credsPassword, credsUserName
 # Initialize a logging object and have some examples below from the Python
 # Doc page
@@ -93,6 +94,12 @@ rAirForce = reddit.subreddit(subreddit)
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
              "Starting processing loop for subreddit: " + subreddit)
 
+#System to keep track of how many 404 errors we get from ePubs, for data research purposes
+#All the .close() statements
+ePubs404Error = 0
+with open("404errors.txt", "a") as f:
+    f.write(f'START: {time.strftime("%Y/%m/%d %H:%M:%S ")}\n')
+
 while True:
     try:
         # stream all comments from /r/AirForce
@@ -157,7 +164,6 @@ while True:
                     if individualMention.group() in ListOfMatchedComments:
                         continue
                     else:
-
                         # A little extra something
                         if "afttp" in individualMention.group():
                             dalist = []
@@ -185,9 +191,34 @@ while True:
                                                                  '?keyword=%s&obsolete=false)' \
                                                                  % individualMention.group()
 
-                        # polls the epubs website for a search
-                        epubsReturn = requests.get(
-                            'http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView?keyword=%s&obsolete=false' % individualMention.group())
+                        #polls the epubs website for a search
+                        reqParams = {'keyword' : individualMention.group(), 'obsolete':'false'}
+                        epubsReturn = requests.get('http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/', params=reqParams)
+
+                        if epubsReturn.status_code == requests.codes.ok:
+                            break
+                        else:
+                            with open("404errors.txt","a") as f:
+                                f.write(f'{time.strftime("%Y/%m/%d %H:%M:%S ")} Comment: {permlink}\n')
+                            print("404 Error received, retrying in 10 seconds")
+                            for i in range(5):
+                                time.sleep(10)
+                                ePubs404Error += 1
+                                with open("404errors.txt", "a") as f:
+                                    f.write(f'Try #{i+1} for {epubsReturn.url}, total failure this lifecycle: {ePubs404Error}\n')
+                                print(f'Got a {str(epubsReturn.status_code)}, this is try number {i+1} to get a return')
+                                epubsReturn = requests.get(
+                                    'http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/',
+                                    params=reqParams)
+                                if epubsReturn.status_code == requests.codes.ok:
+                                    with open("404errors.txt", "a") as f:
+                                        f.write('Finally worked\n')
+                                    print("Finally worked, breaking")
+                                    break
+                            with open("404errors.txt", "a") as f:
+                                f.write('Never worked\n')
+
+
                         epubsSearch = BeautifulSoup(
                             epubsReturn.text, 'html.parser')
 
@@ -209,7 +240,7 @@ while True:
 
                         #iterate through the list of link to find exact matches
                         for i in range(0,len(listOfLinks)):
-                            listItem = regObject.findall(listOfLinks[i])
+                            listItem = regObject.findall(str(listOfLinks[i]))
                             if listItem:
                                 listOfMatchedLinks.append(listOfLinks[i])
 
