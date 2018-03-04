@@ -176,7 +176,7 @@ while True:
                                          + " by " + str(rAirForceComments.author) + ". Comment ID: " +
                                          rAirForceComments.id + "\n")
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
-                            smarmyReply += '\n\nI am a bot, this was an automatic reply.'
+                            smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
                             rAirForceComments.reply(smarmyReply)
                             dbCommentRecord.execute(
                                 'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
