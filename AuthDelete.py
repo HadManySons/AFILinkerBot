@@ -53,6 +53,11 @@ while True:
     try:
         # stream all unread messages from inbox
         for rAirForceComments in reddit.inbox.stream():
+            #If the post is older than about 5 months, ignore it and move on.
+            if (time.time() - rAirForceComments.created) > 13148715:
+                print("Post too old, continuing")
+                continue
+            
             globalCount += 1
 
             #Marks the comment as read
