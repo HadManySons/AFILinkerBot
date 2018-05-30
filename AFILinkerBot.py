@@ -53,7 +53,7 @@ while NotLoggedIn:
 # regex expression used to search for an AFI mention
 AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|" \
                  "usafai|afttp)[0-9]{1,2}-[0-9]{1,4}([0-9]{1})?([a-z]{1,2}-)?" \
-                 "([0-9]{1,3})?(vol|v)?\d?)|((af|form|afform|sf|afto|afcomsec|afg|" \
+                 "([0-9]{1,3})?(vol|v)?\d?)|(([^c][^a])(af|form|afform|sf|afto|afcomsec|afg|" \
                  "apda|aftd|imt|afimt|aetc)[0-9]{1,4}([a-z]{1,2})?)"
 
 # Reply templates to go in the middle of comments
