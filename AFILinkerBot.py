@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import requests
 import praw
 import sqlite3
@@ -9,7 +8,7 @@ import logging
 import time
 import os
 import sys
-import json
+
 from BotCreds import credsUserAgent, credsClientID, credsClientSecret, credsPassword, credsUserName
 # Initialize a logging object and have some examples below from the Python
 # Doc page
@@ -53,7 +52,7 @@ while NotLoggedIn:
 # regex expression used to search for an AFI mention
 AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|" \
                  "usafai|afttp)[0-9]{1,2}-[0-9]{1,4}([0-9]{1})?([a-z]{1,2}-)?" \
-                 "([0-9]{1,3})?(vol|v)?\d?)|(([^c][^a])(af|form|afform|sf|afto|afcomsec|afg|" \
+                 "([0-9]{1,3})?(vol|v)?\d?)|((af|form|afform|sf|afto|afcomsec|afg|" \
                  "apda|aftd|imt|afimt|aetc)[0-9]{1,4}([a-z]{1,2})?)"
 
 # Reply templates to go in the middle of comments
@@ -66,12 +65,14 @@ NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form 
                       '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
                       ' ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n' \
                       'I am a bot, this was an automatic reply.\n\n'
+
 SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or something but I see you tried to ' \
                       'reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random ' \
                       'from a list:\n\n**'
 
-# vars
+# Count of all comments processed during this life of the bot
 globalCount = 0
+
 dbFile = Path("CommentRecord.db")
 
 # check to see if database file exists
@@ -87,8 +88,8 @@ else:  # if it doesn't, create it
 
 # subreddit instance of /r/AirForce. 'AFILinkerBot' must be changed to 'airforce' for a production version of the
 # script. AFILB subreddit used for testing.
-#subreddit = 'airforce+airnationalguard+afrotc'
 subreddit = 'AFILinkerBot'
+
 rAirForce = reddit.subreddit(subreddit)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
@@ -109,8 +110,7 @@ while True:
             print("Processing comment: " + rAirForceComments.id)
 
             # prints a link to the comment.
-            permlink = "http://www.reddit.com" + \
-                rAirForceComments.permalink
+            permlink = "http://www.reddit.com" + rAirForceComments.permalink
             print(permlink)
             logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
                          "Processing comment: " + permlink)
@@ -130,6 +130,9 @@ while True:
             elif rAirForceComments.author == "AFILinkerBot":
                 print("Author was the bot, skipping...")
                 continue
+            elif rAirForceComments.archived == True:
+                print("Comment too old, skipping...")
+                continue
             else:
                 # make the comment all lowercase and remove all spaces, change
                 # vol to v, and other cleanup
@@ -144,18 +147,15 @@ while True:
                 formattedComment = formattedComment.replace('vol', 'v')
                 print("Formatted Comment: " + formattedComment)
 
-                # search the comments for a match
+                # search the comment for a match
                 inputToTest = re.compile(AFIsearchRegEx, re.IGNORECASE)
                 MatchedComments = inputToTest.finditer(formattedComment)
 
-                # Keep a list of matched comments so we only post one link per
-                # AFI
+                # Keep a list of matched comments so we only post one link per publication
                 ListOfMatchedComments = []
 
-                # Variables to hold all the matched AFI links and their
-                # respective search links
+                # Variables to hold all the matched AFI links
                 TotalAFILinks = ""
-                TotalSearchLinks = ""
 
                 # Iterate through all the matched comments
                 for individualMention in MatchedComments:
@@ -164,6 +164,7 @@ while True:
                     if individualMention.group() in ListOfMatchedComments:
                         continue
                     else:
+                        print(individualMention.group())
                         # A little extra something
                         if "afttp" in individualMention.group():
                             dalist = []
@@ -183,17 +184,12 @@ while True:
                             conn.commit()
                             continue
 
-                        # searchLink is what is at the bottom of a comment to
-                        # let people search for their own crap
-                        searchLink = '[' + str(
-                            individualMention.group()).upper() + ' search link](http://www.e-publishing.af.mil' \
-                                                                 '/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView' \
-                                                                 '/?keyword=%s&obsolete=false)' \
-                                                                 % individualMention.group()
-
                         #polls the epubs website for a search
-                        reqParams = {'keyword' : individualMention.group(), 'obsolete':'false'}
-                        epubsReturn = requests.get('http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/', params=reqParams)
+                        session = requests.Session()
+                        session.head('https://www.e-publishing.af.mil/')
+                        reqParams = {'keyword': individualMention.group(), 'obsolete': 'false'}
+
+                        epubsReturn = session.get('http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/', params=reqParams)
 
                         if epubsReturn.status_code == requests.codes.not_found:
                             with open("404errors.txt","a") as f:
@@ -217,23 +213,12 @@ while True:
                                 f.write('Never worked\n')
 
 
-                        epubsSearch = BeautifulSoup(
-                            epubsReturn.text, 'html.parser')
-
-                        # regex to match exactly the afi typed from the ePubs
-                        # crawl
-                        individualMentionRegex = "(?<=/)(" + \
-                            individualMention.group() + ")(?=\.pdf)"
-                        # scrub the epubs search return and look for an exact
-                        # match between a / and .pdf
-
-                        listOfLinks = []
+                        # Scrub the epubsReturn and find all http or https links
+                        listOfLinks = re.findall("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", epubsReturn.text)
                         listOfMatchedLinks = []
 
-                        #find all <a href> tags and append the hyperlink to a list
-                        for aTags in epubsSearch.find_all('a'):
-                            listOfLinks.append(aTags.get('href'))
-
+                        # regex to match exactly the afi typed in the comment, but with a ".pdf" at the end
+                        individualMentionRegex = "(?<=/)(" + individualMention.group() + ")(?=\.pdf)"
                         regObject = re.compile(individualMentionRegex)
 
                         #iterate through the list of link to find exact matches
@@ -257,7 +242,7 @@ while True:
                                 ListOfMatchedComments.append(individualMention.group())
                                 print("Link: " + link)
                                 TotalAFILinks += link + "\n\n"
-                                TotalSearchLinks += searchLink + "\n\n"
+
 
                 # if the TotalAFILinks variable isn't empty (no matches),
                 # prepare the reply comment
@@ -266,7 +251,6 @@ while True:
                     replyComment += "___________________________________________________________\n\n"
                     replyComment += NormalReplyTemplate
                     replyComment += "___________________________________________________________\n\n"
-                    replyComment += "\n\n" + TotalSearchLinks
                     # create db record of comment so we don't comment on it
                     # again
                     dbCommentRecord.execute(
