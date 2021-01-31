@@ -1,6 +1,5 @@
 import requests
 import praw
-import sqlite3
 from pathlib import Path
 import re
 import random
@@ -9,10 +8,16 @@ import time
 import os
 import sys
 
-from BotCreds import credsUserAgent, credsClientID, credsClientSecret, credsPassword, credsUserName
 # Initialize a logging object and have some examples below from the Python
 # Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
+
+credsPassword = os.environ.get('AFE_PASSWORD')
+credsUserName = os.environ.get('AFE_USERNAME')
+credsClientSecret = os.environ.get('AFE_SECRET')
+credsClientID = os.environ.get("AFE_ID")
+credsUserAgent = os.environ.get("AFE_USERAGENT")
+subreddit = os.environ.get("AFE_SUBREDDIT")
 
 #Get the PID of this process
 pid = str(os.getpid())
@@ -27,6 +32,16 @@ if os.path.isfile(pidfile):
 open(pidfile, 'w').write(pid)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
+
+#funtion to check for comments that may have already been replied to
+def checkForReplies(comment_list, rAirForceComments):
+    for comment in comment_list:
+        if rAirForceComments.id in comment.body:
+            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
+                         "Already processed comment: " + permlink + ", skipping")
+            print("Comment already processed, skipping")
+            return True
+    return False
 
 #Try to login or sleep/wait until logged in, or exit if user/pass wrong
 NotLoggedIn = True
@@ -73,22 +88,8 @@ SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or s
 # Count of all comments processed during this life of the bot
 globalCount = 0
 
-dbFile = Path("CommentRecord.db")
-
-# check to see if database file exists
-if dbFile.is_file():
-    # connection to database file
-    conn = sqlite3.connect("CommentRecord.db")
-    # database cursor object
-    dbCommentRecord = conn.cursor()
-else:  # if it doesn't, create it
-    conn = sqlite3.connect("CommentRecord.db")
-    dbCommentRecord = conn.cursor()
-    dbCommentRecord.execute('''CREATE TABLE comments(comment text)''')
-
 # subreddit instance of /r/AirForce. 'AFILinkerBot' must be changed to 'airforce' for a production version of the
 # script. AFILB subreddit used for testing.
-subreddit = 'AFILinkerBot'
 
 rAirForce = reddit.subreddit(subreddit)
 
@@ -115,18 +116,12 @@ while True:
             logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
                          "Processing comment: " + permlink)
 
-            # Pulls all comments previously commented on
-            dbCommentRecord.execute(
-                "SELECT * FROM comments WHERE comment=?", (rAirForceComments.id,))
-
-            id_exists = dbCommentRecord.fetchone()
-
-            # Make sure we don't reply to the same comment twice or to the bot
-            # itself
-            if id_exists:
-                print("Already processed comment: " +
-                      str(rAirForceComments.id) + ", skipping")
+            # check for comments that may have already been replied to
+            rAirForceComments.refresh()
+            rAirForceComments.replies.replace_more()
+            if checkForReplies(rAirForceComments.replies.list(), rAirForceComments):
                 continue
+            # Make sure we don't reply to ourselves or a comment that's too old
             elif rAirForceComments.author == "AFILinkerBot":
                 print("Author was the bot, skipping...")
                 continue
@@ -251,10 +246,7 @@ while True:
                     replyComment += "___________________________________________________________\n\n"
                     replyComment += NormalReplyTemplate
                     replyComment += "___________________________________________________________\n\n"
-                    # create db record of comment so we don't comment on it
-                    # again
-                    dbCommentRecord.execute(
-                        'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
+                    replyComment += " ^^^^^^" + rAirForceComments.id
 
                     # Comments on post
                     print("Commenting on mention of: " + str(ListOfMatchedComments) + " by " + str(
@@ -264,14 +256,11 @@ while True:
                         rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id + "\n")
                     # Comments on post
                     rAirForceComments.reply(replyComment)
-                    # save changes to db
-                    conn.commit()
+
 
     # what to do if Ctrl-C is pressed while script is running
     except KeyboardInterrupt:
         print("Keyboard Interrupt experienced, cleaning up and exiting")
-        conn.commit()
-        conn.close()
         print("Exiting due to keyboard interrupt")
         logging.info(time.strftime("%Y/%m/%d %H:%M:%S ")
                     + "Exiting due to keyboard interrupt")
