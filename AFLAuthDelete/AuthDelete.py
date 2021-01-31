@@ -3,7 +3,6 @@ import logging
 import time
 import os
 import sys
-from BotCreds import credsUserAgent, credsClientID, credsClientSecret, credsPassword, credsUserName
 
 # Initialize a logging object and have some examples below from the Python
 # Doc page
@@ -22,6 +21,12 @@ if os.path.isfile(pidfile):
 open(pidfile, 'w').write(pid)
 
 logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
+
+credsPassword = os.environ.get('AFL_PASSWORD')
+credsUserName = os.environ.get('AFL_USERNAME')
+credsClientSecret = os.environ.get('AFL_SECRET')
+credsClientID = os.environ.get("AFL_ID")
+credsUserAgent = os.environ.get("AFL_USERAGENT")
 
 # Try to login or sleep/wait until logged in, or exit if user/pass wrong
 NotLoggedIn = True

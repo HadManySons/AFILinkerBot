@@ -12,12 +12,12 @@ import sys
 # Doc page
 logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
-credsPassword = os.environ.get('AFE_PASSWORD')
-credsUserName = os.environ.get('AFE_USERNAME')
-credsClientSecret = os.environ.get('AFE_SECRET')
-credsClientID = os.environ.get("AFE_ID")
-credsUserAgent = os.environ.get("AFE_USERAGENT")
-subreddit = os.environ.get("AFE_SUBREDDIT")
+credsPassword = os.environ.get('AFL_PASSWORD')
+credsUserName = os.environ.get('AFL_USERNAME')
+credsClientSecret = os.environ.get('AFL_SECRET')
+credsClientID = os.environ.get("AFL_ID")
+credsUserAgent = os.environ.get("AFL_USERAGENT")
+subreddit = os.environ.get("AFL_SUBREDDIT")
 
 #Get the PID of this process
 pid = str(os.getpid())

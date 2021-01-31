@@ -1,6 +1,6 @@
-AFE_USERNAME=
-AFE_PASSWORD=
-AFE_SECRET=
-AFE_ID=
-AFE_USERAGENT=
-AFE_SUBREDDIT=airforce+airnationalguard+afrotc+airforcerecruits
+AFL_USERNAME=
+AFL_PASSWORD=
+AFL_SECRET=
+AFL_ID=
+AFL_USERAGENT=
+AFL_SUBREDDIT=airforce+airnationalguard+afrotc+airforcerecruits
