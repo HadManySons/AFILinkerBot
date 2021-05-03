@@ -2,7 +2,6 @@ import praw
 import logging
 import time
 import os
-import sys
 
 # Initialize a logging object and have some examples below from the Python
 # Doc page

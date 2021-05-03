@@ -162,9 +162,6 @@ while True:
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
                             smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
                             rAirForceComments.reply(smarmyReply)
-                            dbCommentRecord.execute(
-                                'INSERT INTO comments VALUES (?);', (rAirForceComments.id,))
-                            conn.commit()
                             continue
 
                         #polls the epubs website for a search
