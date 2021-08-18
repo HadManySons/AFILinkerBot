@@ -161,6 +161,7 @@ while True:
                                          rAirForceComments.id + "\n")
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
                             smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
+                            smarmyReply += " ^^^^^^" + rAirForceComments.id
                             rAirForceComments.reply(smarmyReply)
                             continue
 
