@@ -3,14 +3,11 @@ import praw
 from pathlib import Path
 import re
 import random
+from helper_functions import print_and_log
 import logging
 import time
 import os
 import sys
-
-# Initialize a logging object and have some examples below from the Python
-# Doc page
-logging.basicConfig(filename='AFILinkerBot.log', level=logging.INFO)
 
 credsPassword = os.environ.get('AFL_PASSWORD')
 credsUserName = os.environ.get('AFL_USERNAME')
@@ -19,15 +16,13 @@ credsClientID = os.environ.get("AFL_ID")
 credsUserAgent = os.environ.get("AFL_USERAGENT")
 subreddit = os.environ.get("AFL_SUBREDDIT")
 
-logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Starting script")
+print_and_log("Starting script")
 
 #funtion to check for comments that may have already been replied to
 def checkForReplies(comment_list, rAirForceComments):
     for comment in comment_list:
         if rAirForceComments.id in comment.body:
-            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
-                         "Already processed comment: " + permlink + ", skipping")
-            print("Comment already processed, skipping")
+           print_and_log("Already processed comment: " + permlink + ", skipping")
             return True
     return False
 
@@ -41,14 +36,13 @@ while NotLoggedIn:
             client_secret=credsClientSecret.strip(),
             username=credsUserName.strip(),
             password=credsPassword.strip())
-        print("Logged in")
+        print_and_log("Logged in")
         NotLoggedIn = False
     except praw.errors.InvalidUserPass:
-        print("Wrong username or password")
-        logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") + "Wrong username or password")
+        print_and_log("Wrong username or password", error=True)
         exit(1)
     except Exception as err:
-        print(err)
+        print_and_log(err, error=True)
         time.sleep(5)
 
 
@@ -81,8 +75,7 @@ globalCount = 0
 
 rAirForce = reddit.subreddit(subreddit)
 
-logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
-             "Starting processing loop for subreddit: " + subreddit)
+print_and_log("Starting processing loop for subreddit: " + subreddit)
 
 #System to keep track of how many 404 errors we get from ePubs, for data research purposes
 #All the .close() statements
@@ -95,14 +88,12 @@ while True:
         # stream all comments from /r/AirForce
         for rAirForceComments in rAirForce.stream.comments():
             globalCount += 1
-            print("\nComments processed since start of script: " + str(globalCount))
-            print("Processing comment: " + rAirForceComments.id)
+            print_and_log("\nComments processed since start of script: " + str(globalCount))
+            print_and_log("Processing comment: " + rAirForceComments.id)
 
             # prints a link to the comment.
             permlink = "http://www.reddit.com" + rAirForceComments.permalink
-            print(permlink)
-            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
-                         "Processing comment: " + permlink)
+            print_and_log("Processing comment: " + permlink)
 
             # check for comments that may have already been replied to
             rAirForceComments.refresh()
@@ -153,12 +144,8 @@ while True:
                             dalist = []
                             with open('smarmycomments.txt', 'r') as f:
                                 dalist = f.read().splitlines()
-                            print("Dropping a smarmy comment on the mention of: " + individualMention.group() +
+                            print_and_log("Dropping a smarmy comment on the mention of: " + individualMention.group() +
                                   " by " + str(rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id)
-                            logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") +
-                                         "Dropping a smarmy comment on the mention of: " + individualMention.group()
-                                         + " by " + str(rAirForceComments.author) + ". Comment ID: " +
-                                         rAirForceComments.id + "\n")
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
                             smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
                             smarmyReply += " ^^^^^^" + rAirForceComments.id
@@ -212,9 +199,7 @@ while True:
                         # TotalAFILinks and TotalSearchLinks variables
                         for link in listOfMatchedLinks:
                             if "CDATA" in link:
-                                print("Garbage return, skipping link")
-                                logging.error(time.strftime("%Y/%m/%d %H:%M:%S ")
-                                              + "Garbage ePubs return")
+                                print_and_log("Garbage return, skipping link")
                                 continue
                             if link in formattedComment:
                                 print(str(individualMention.group()).upper() + " link already posted by OP, skipping")
@@ -235,24 +220,16 @@ while True:
                     replyComment += " ^^^^^^" + rAirForceComments.id
 
                     # Comments on post
-                    print("Commenting on mention of: " + str(ListOfMatchedComments) + " by " + str(
-                        rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id)
-                    logging.info(time.strftime("%Y/%m/%d %H:%M:%S ") + "Commenting on mention of: " + str(
-                        ListOfMatchedComments) + " by " + str(
-                        rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id + "\n")
-                    # Comments on post
                     rAirForceComments.reply(replyComment)
+                    print_and_log("Commented on mention of: " + str(ListOfMatchedComments) + " by " + 
+                        str(rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id)
 
 
     # what to do if Ctrl-C is pressed while script is running
     except KeyboardInterrupt:
-        print("Keyboard Interrupt experienced, cleaning up and exiting")
-        print("Exiting due to keyboard interrupt")
-        logging.info(time.strftime("%Y/%m/%d %H:%M:%S ")
-                    + "Exiting due to keyboard interrupt")
+        print_and_log("Exiting due to keyboard interrupt")
         exit(0)
     
     except Exception as err:
-        print("Exception: " + str(err.with_traceback()))
-        logging.error(time.strftime("%Y/%m/%d %H:%M:%S ") 
-                                + "Unhandled exception: " + + str(err.with_traceback()))
+        print_and_log("Exception: " + str(err.with_traceback()))
+        
