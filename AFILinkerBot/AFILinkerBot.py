@@ -3,15 +3,13 @@ import praw
 from pathlib import Path
 import re
 import random
-from helper_functions import print_and_log
-import logging
+from helper_functions import print_and_log, log404
 import time
 import os
-import sys
 
-credsPassword = os.environ.get('AFL_PASSWORD')
-credsUserName = os.environ.get('AFL_USERNAME')
-credsClientSecret = os.environ.get('AFL_SECRET')
+credsPassword = os.environ.get("AFL_PASSWORD")
+credsUserName = os.environ.get("AFL_USERNAME")
+credsClientSecret = os.environ.get("AFL_SECRET")
 credsClientID = os.environ.get("AFL_ID")
 credsUserAgent = os.environ.get("AFL_USERAGENT")
 subreddit = os.environ.get("AFL_SUBREDDIT")
@@ -23,7 +21,7 @@ def checkForReplies(comment_list, rAirForceComments):
     for comment in comment_list:
         if rAirForceComments.id in comment.body:
            print_and_log("Already processed comment: " + permlink + ", skipping")
-            return True
+           return True
     return False
 
 #Try to login or sleep/wait until logged in, or exit if user/pass wrong
@@ -53,24 +51,24 @@ AFIsearchRegEx = "((afi|afpd|afman|afva|afh|afji|afjman|afpam|afgm|afpci|aetci|"
                  "apda|aftd|imt|afimt|aetc)[0-9]{1,4}([a-z]{1,2})?)"
 
 # Reply templates to go in the middle of comments
-NormalReplyTemplate = '^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication ^^without ' \
-                      '^^linking ^^to ^^it, ^^so ^^I ^^have ^^posted ^^a ^^link ^^to ^^it. ^^Additionally, ^^there ' \
-                      '^^may ^^be ^^other ^^MAJCOM, ^^NAF ^^or ^^Wing ^^sups ^^to ^^the ^^linked ^^AFI, ^^so ^^I ' \
-                      '^^will ^^also ^^post ^^a ^^link ^^to ^^the ^^search ^^URL ^^used ^^below ^^so ^^that ^^you ' \
-                      '^^can ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may ' \
-                      '^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a '\
-                      '^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)'\
-                      ' ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n' \
-                      'I am a bot, this was an automatic reply.\n\n'
+NormalReplyTemplate = "^^It ^^looks ^^like ^^you ^^mentioned ^^an ^^AFI, ^^form ^^or ^^other ^^publication ^^without " \
+                      "^^linking ^^to ^^it, ^^so ^^I ^^have ^^posted ^^a ^^link ^^to ^^it. ^^Additionally, ^^there " \
+                      "^^may ^^be ^^other ^^MAJCOM, ^^NAF ^^or ^^Wing ^^sups ^^to ^^the ^^linked ^^AFI, ^^so ^^I " \
+                      "^^will ^^also ^^post ^^a ^^link ^^to ^^the ^^search ^^URL ^^used ^^below ^^so ^^that ^^you " \
+                      "^^can ^^look ^^for ^^additional ^^supplements ^^or ^^guidance ^^memos ^^that ^^may " \
+                      "^^apply. ^^Please ^^let ^^me ^^know ^^if ^^this ^^is ^^incorrect ^^or ^^if ^^you ^^have ^^a "\
+                      "^^suggestion ^^to ^^make ^^me ^^better ^^by ^^posting ^^in ^^my ^^subreddit ^^(/r/AFILinkerBot)"\
+                      " ^^| ^^[GitHub](https://github.com/HadManySons/AFILinkerBot).\n\n" \
+                      "I am a bot, this was an automatic reply.\n\n"
 
-SmarmyReplyTemplate = 'This is where I would normally post a link to an AFI or something but I see you tried to ' \
-                      'reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random ' \
-                      'from a list:\n\n**'
+SmarmyReplyTemplate = "This is where I would normally post a link to an AFI or something but I see you tried to " \
+                      "reference an AFTTP. So instead I will leave you a gem from /r/AirForce, chosen at random " \
+                      "from a list:\n\n**"
 
 # Count of all comments processed during this life of the bot
 globalCount = 0
 
-# subreddit instance of /r/AirForce. 'AFILinkerBot' must be changed to 'airforce' for a production version of the
+# subreddit instance of /r/AirForce. "AFILinkerBot" must be changed to "airforce" for a production version of the
 # script. AFILB subreddit used for testing.
 
 rAirForce = reddit.subreddit(subreddit)
@@ -80,8 +78,7 @@ print_and_log("Starting processing loop for subreddit: " + subreddit)
 #System to keep track of how many 404 errors we get from ePubs, for data research purposes
 #All the .close() statements
 ePubs404Error = 0
-with open("404errors.txt", "a") as f:
-    f.write('START: {}\n'.format(time.strftime("%Y/%m/%d %H:%M:%S")))
+log404("Start")
 
 while True:
     try:
@@ -100,7 +97,7 @@ while True:
             rAirForceComments.replies.replace_more()
             if checkForReplies(rAirForceComments.replies.list(), rAirForceComments):
                 continue
-            # Make sure we don't reply to ourselves or a comment that's too old
+            # Make sure we don"t reply to ourselves or a comment that"s too old
             elif rAirForceComments.author == "AFILinkerBot":
                 print("Author was the bot, skipping...")
                 continue
@@ -108,17 +105,16 @@ while True:
                 print("Comment too old, skipping...")
                 continue
             else:
-                # make the comment all lowercase and remove all spaces, change
-                # vol to v, and other cleanup
-                formattedComment = rAirForceComments.body
-                formattedComment = formattedComment.lower()
-                formattedComment = formattedComment.replace(' ', '')
+                # make the comment all lowercase and remove all spaces, change vol to v, and other cleanup
+                formattedComment = rAirForceComments.body.lower().replace(" ", "")
+                #formattedComment = formattedComment.lower()
+                #formattedComment = formattedComment.replace(" ", "")
                 if "form" in formattedComment:
                     if "afform" in formattedComment or "aftoform" in formattedComment:
-                        formattedComment = formattedComment.replace('form', '')
+                        formattedComment = formattedComment.replace("form", "")
                     else:
-                        formattedComment = formattedComment.replace('form', 'af')
-                formattedComment = formattedComment.replace('vol', 'v')
+                        formattedComment = formattedComment.replace("form", "af")
+                formattedComment = formattedComment.replace("vol", "v")
                 print("Formatted Comment: " + formattedComment)
 
                 # search the comment for a match
@@ -142,43 +138,36 @@ while True:
                         # A little extra something
                         if "afttp" in individualMention.group():
                             dalist = []
-                            with open('smarmycomments.txt', 'r') as f:
+                            with open("smarmycomments.txt", "r") as f:
                                 dalist = f.read().splitlines()
                             print_and_log("Dropping a smarmy comment on the mention of: " + individualMention.group() +
                                   " by " + str(rAirForceComments.author) + ". Comment ID: " + rAirForceComments.id)
                             smarmyReply = SmarmyReplyTemplate + (dalist[random.randint(0, len(dalist) - 1)])
-                            smarmyReply += '**\n\nI am a bot, this was an automatic reply.'
+                            smarmyReply += "**\n\nI am a bot, this was an automatic reply."
                             smarmyReply += " ^^^^^^" + rAirForceComments.id
                             rAirForceComments.reply(smarmyReply)
                             continue
 
                         #polls the epubs website for a search
                         session = requests.Session()
-                        session.head('https://www.e-publishing.af.mil/')
-                        reqParams = {'keyword': individualMention.group(), 'obsolete': 'false'}
+                        session.head("https://www.e-publishing.af.mil/")
+                        reqParams = {"keyword": individualMention.group(), "obsolete": "false"}
 
-                        epubsReturn = session.get('http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/', params=reqParams)
+                        epubsReturn = session.get("http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/", params=reqParams)
 
                         if epubsReturn.status_code == requests.codes.not_found:
-                            with open("404errors.txt","a") as f:
-                                f.write('{} Comment: {}\n'.format(time.strftime("%Y/%m/%d %H:%M:%S "), permlink))
-                            print("404 Error received, retrying in 10 seconds")
+                            log404(f"404 Error received, retrying in 10 seconds: {permlink}")
                             for i in range(5):
                                 time.sleep(10)
                                 ePubs404Error += 1
-                                with open("404errors.txt", "a") as f:
-                                    f.write('Try #{} for {}, total failure this lifecycle: {}\n'.format((i+1), epubsReturn.url, ePubs404Error))
-                                print('Got a {}, this is try number {} to get a return'.format(str(epubsReturn.status_code),(i+1)))
+                                log404(f"Try #{str(i+1)} for {epubsReturn.url}, total failure this lifecycle: {ePubs404Error}")
                                 epubsReturn = requests.get(
-                                    'http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/',
+                                    "http://www.e-publishing.af.mil/DesktopModules/MVC/EPUBS/EPUB/GetPubsSearchView/",
                                     params=reqParams)
                                 if epubsReturn.status_code == requests.codes.ok:
-                                    with open("404errors.txt", "a") as f:
-                                        f.write('Finally worked\n')
-                                    print("Finally worked, breaking")
+                                    log404("Finally worked")
                                     break
-                            with open("404errors.txt", "a") as f:
-                                f.write('Never worked\n')
+                            log404("Never worked")
 
 
                         # Scrub the epubsReturn and find all http or https links
@@ -195,8 +184,7 @@ while True:
                             if listItem:
                                 listOfMatchedLinks.append(listOfLinks[i])
 
-                        # Parse through results and start building the
-                        # TotalAFILinks and TotalSearchLinks variables
+                        # Parse through results and start building the TotalAFILinks and TotalSearchLinks variables
                         for link in listOfMatchedLinks:
                             if "CDATA" in link:
                                 print_and_log("Garbage return, skipping link")
@@ -210,7 +198,7 @@ while True:
                                 TotalAFILinks += link + "\n\n"
 
 
-                # if the TotalAFILinks variable isn't empty (no matches),
+                # if the TotalAFILinks variable isn"t empty (no matches),
                 # prepare the reply comment
                 if TotalAFILinks != "":
                     replyComment = TotalAFILinks
@@ -231,5 +219,5 @@ while True:
         exit(0)
     
     except Exception as err:
-        print_and_log("Exception: " + str(err.with_traceback()))
+        print_and_log(str(err.with_traceback()), error=True)
         
