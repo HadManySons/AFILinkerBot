@@ -6,10 +6,10 @@ from logging.handlers import RotatingFileHandler
 
 LOG_TIME_FORMAT = "%Y/%m/%d %H:%M:%S "
 
-logger = logging.getLogger("AFILinkerBot Rotating Log") 
-logger.setLevel(logging.INFO) 
-    
-# add a rotating handler 
+logger = logging.getLogger("AFILinkerBot Rotating Log")
+logger.setLevel(logging.INFO)
+
+# add a rotating handler
 handler = RotatingFileHandler("AFILinkerBot.log", maxBytes=2048000, backupCount=25)
 logger.addHandler(handler)
 
