@@ -107,8 +107,6 @@ while True:
             else:
                 # make the comment all lowercase and remove all spaces, change vol to v, and other cleanup
                 formattedComment = rAirForceComments.body.lower().replace(" ", "")
-                #formattedComment = formattedComment.lower()
-                #formattedComment = formattedComment.replace(" ", "")
                 if "form" in formattedComment:
                     if "afform" in formattedComment or "aftoform" in formattedComment:
                         formattedComment = formattedComment.replace("form", "")
