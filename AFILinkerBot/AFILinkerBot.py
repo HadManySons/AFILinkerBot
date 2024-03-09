@@ -20,8 +20,8 @@ print_and_log("Starting script")
 def checkForReplies(comment_list, rAirForceComments):
     for comment in comment_list:
         if rAirForceComments.id in comment.body:
-           print_and_log("Already processed comment: " + permlink + ", skipping")
-           return True
+            print_and_log("Already processed comment: " + permlink + ", skipping")
+            return True
     return False
 
 #Try to login or sleep/wait until logged in, or exit if user/pass wrong
