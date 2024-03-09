@@ -1,6 +1,8 @@
 # AFILinkerBot
 Reddit bot that searches /r/AirForce looking for AFI/Forms/Publication mentions and posts links to them
 
+[![Docker Image CI](https://github.com/HadManySons/AFILinkerBot/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/HadManySons/AFILinkerBot/actions/workflows/docker-image.yml)
+
 Usage:
 
 1. 'pip install -r requirements.txt'
