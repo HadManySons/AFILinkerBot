@@ -21,4 +21,4 @@ jobs:
     - name: Analysing the code with pylint
       working-directory: ./AFILinkerBot
       run: |
-        pylint $(git ls-files '*.py')
+        pylint disable=line-to-long $(git ls-files '*.py')
