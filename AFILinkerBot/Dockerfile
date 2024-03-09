@@ -9,6 +9,7 @@ WORKDIR /app
 COPY requirements.txt .
 COPY AFILinkerBot.py .
 COPY smarmycomments.txt .
+COPY helper_functions.py .
 
 RUN pip install -r requirements.txt
 
