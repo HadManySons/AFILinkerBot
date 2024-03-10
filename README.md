@@ -3,12 +3,15 @@ Reddit bot that searches /r/AirForce looking for AFI/Forms/Publication mentions 
 
 [![Docker Image CI](https://github.com/HadManySons/AFILinkerBot/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/HadManySons/AFILinkerBot/actions/workflows/docker-image.yml)
 
-Usage:
+# Run
+## To run the latest image from docker, execute:
 
-1. 'pip install -r requirements.txt'
+`cd AFILinkerBot`
 
-2. Fill in the appropriate credentials in the BotCreds.py file
+`docker build -t afilinkerbot .`
 
-3. Change the subreddit variable from 'AFILinkerBot' to the subreddit of your choice
+`docker run -d --name afexcuses -v AFexcuses:/app --restart unless-stopped --env-file ./AFE_ENVS.list afilinkerbot`
 
-4. Run scripts
+`--restart unless-stopped` is optional, only needed if you want the bot to survive errors.
+
+`--env-file ./AFE_ENVS.list` needs to be populated with the bot creds, the excuse file name and the subreddits 
